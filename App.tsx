@@ -80,7 +80,7 @@ function App() {
   const handleDownloadTxt = () => {
     if (!result) return;
     
-    let content = `DOCUMIND - REPORTE DE ANÁLISIS\n`;
+    let content = `A+ ESTUDIA MEJOR - REPORTE DE ANÁLISIS\n`;
     content += `Generado el: ${new Date().toLocaleDateString()}\n`;
     content += `=================================================\n\n`;
     
@@ -118,7 +118,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'documind-resultado.txt';
+    link.download = 'a-mas-estudia-mejor-resultado.txt';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -149,7 +149,7 @@ function App() {
     };
 
     // Header
-    addText("DocuMind - Resultados de Evaluación", 22, true, '#2563eb');
+    addText("A+ Estudia Mejor - Resultados de Evaluación", 22, true, '#2563eb');
     y += 5;
     addText(`Fecha: ${new Date().toLocaleDateString()}`, 10, false, '#64748b');
     y += 10;
@@ -236,7 +236,7 @@ function App() {
       y += 5; // Space between topics
     });
 
-    doc.save("documind-evaluacion.pdf");
+    doc.save("a-mas-estudia-mejor-evaluacion.pdf");
   };
 
   return (
@@ -250,7 +250,7 @@ function App() {
               <BrainCircuit size={24} />
             </div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-700">
-              DocuMind
+              A+ Estudia Mejor
             </h1>
           </div>
           <div className="flex items-center space-x-4">
