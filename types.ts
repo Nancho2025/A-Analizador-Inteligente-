@@ -1,3 +1,4 @@
+
 export interface Question {
   text: string;
   options: string[];
@@ -26,6 +27,7 @@ export interface UploadedFile {
 export enum AppStatus {
   IDLE = 'IDLE',
   PROCESSING = 'PROCESSING',
+  GENERATING_AUDIO = 'GENERATING_AUDIO', // New status
   COMPLETED = 'COMPLETED',
   ERROR = 'ERROR'
 }

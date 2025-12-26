@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { AnalysisResult, UploadedFile } from "../types";
 
 // Schema definition for structured output
@@ -53,20 +53,22 @@ const analysisSchema: Schema = {
   required: ["summary", "quizzes"],
 };
 
-export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisResult> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API Key no encontrada. Por favor configura tu entorno.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-
-  // Prepare parts for the model
+const getPartsFromFiles = (files: UploadedFile[]) => {
   const parts: any[] = [];
-
   for (const f of files) {
-    if (f.mimeType.startsWith('text/')) {
-      // For text files, we decode the base64 content and send it as a text part
+    // Robust MimeType detection
+    let mimeType = f.mimeType;
+    const lowerName = f.file.name.toLowerCase();
+    
+    if (!mimeType || mimeType === '' || mimeType === 'application/octet-stream') {
+      if (lowerName.endsWith('.pdf')) mimeType = 'application/pdf';
+      else if (lowerName.endsWith('.txt')) mimeType = 'text/plain';
+      else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) mimeType = 'image/jpeg';
+      else if (lowerName.endsWith('.png')) mimeType = 'image/png';
+    }
+
+    // Handle Text Files
+    if (mimeType === 'text/plain' || mimeType.startsWith('text/')) {
       try {
         const binaryString = atob(f.base64 || "");
         const bytes = new Uint8Array(binaryString.length);
@@ -74,60 +76,115 @@ export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisR
           bytes[i] = binaryString.charCodeAt(i);
         }
         const textContent = new TextDecoder().decode(bytes);
-        parts.push({ text: `--- INICIO DOCUMENTO DE TEXTO: ${f.file.name} ---\n${textContent}\n--- FIN DOCUMENTO ---\n` });
+        parts.push({ text: `--- DOCUMENTO: ${f.file.name} ---\n${textContent}\n--- FIN DOCUMENTO ---\n` });
       } catch (e) {
-        console.error(`Error decoding text file ${f.file.name}:`, e);
-        // Fallback to inlineData if decoding fails, though highly unlikely for text/plain
+        // Fallback if decoding fails
         parts.push({
           inlineData: {
-            mimeType: f.mimeType,
+            mimeType: mimeType || 'text/plain',
             data: f.base64 || "",
           },
         });
       }
     } else {
-      // For PDF and Images, use inlineData
+      // Handle PDF and Images
       parts.push({
         inlineData: {
-          mimeType: f.mimeType,
+          mimeType: mimeType,
           data: f.base64 || "",
         },
       });
     }
   }
+  return parts;
+};
 
-  // Add the text prompt
+export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisResult> => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("API Key no encontrada.");
+
+  const ai = new GoogleGenAI({ apiKey });
+  const parts = getPartsFromFiles(files);
+
   parts.push({
     text: `Analiza los documentos adjuntos.
-    1. Genera un resumen detallado y educativo del contenido.
-    2. Identifica los temas principales y crea un cuestionario de evaluación (quiz) para cada tema.
-    3. Asegúrate de que las preguntas sean desafiantes pero justas.
-    
-    Responde estrictamente en formato JSON según el esquema proporcionado.`,
+    1. Genera un resumen detallado y educativo.
+    2. Identifica los temas principales y crea un cuestionario de evaluación.
+    Responde estrictamente en formato JSON según el esquema.`,
   });
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview", 
-      contents: {
-        role: "user",
-        parts: parts,
-      },
+      contents: { role: "user", parts: parts },
       config: {
         responseMimeType: "application/json",
         responseSchema: analysisSchema,
-        systemInstruction: "Eres un profesor experto y analista de documentos. Tu objetivo es ayudar a los estudiantes a comprender y evaluar su conocimiento sobre los materiales subidos. Responde siempre en Español.",
+        systemInstruction: "Eres un profesor experto. Responde en Español.",
       },
     });
 
     const text = response.text;
-    if (!text) {
-      throw new Error("No se generó respuesta del modelo.");
-    }
-
+    if (!text) throw new Error("No se generó respuesta.");
     return JSON.parse(text) as AnalysisResult;
   } catch (error) {
-    console.error("Error analyzing documents:", error);
+    console.error("Error analyzing:", error);
+    throw error;
+  }
+};
+
+export const generateAudioFromDocuments = async (files: UploadedFile[]): Promise<string> => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("API Key no encontrada.");
+
+  const ai = new GoogleGenAI({ apiKey });
+  
+  // Step 1: Generate a script from the documents using a vision/text model
+  const scriptParts = getPartsFromFiles(files);
+  scriptParts.push({
+    text: `Actúa como un locutor de podcast educativo. 
+    Escribe un guion fluido, natural y atractivo que explique los puntos más importantes de estos documentos.
+    El guion será leído en voz alta, así que evita usar viñetas, markdown (*, #) o formato complejo.
+    Usa un lenguaje claro y párrafos conectados. Comienza diciendo "Hola, aquí tienes el resumen de tus documentos...".
+    Mantén el guion conciso (máximo 300 palabras).`
+  });
+
+  let scriptText = "";
+  try {
+    const scriptResponse = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { role: "user", parts: scriptParts },
+    });
+    scriptText = scriptResponse.text || "";
+  } catch (e) {
+    console.error("Error generating script", e);
+    throw new Error("No se pudo analizar el contenido para crear el audio. Verifica que los archivos sean válidos.");
+  }
+
+  // Step 2: Convert the script to Audio using the TTS model
+  if (!scriptText) throw new Error("El guion de audio estaba vacío.");
+
+  try {
+    const audioResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash-preview-tts",
+      contents: [{ parts: [{ text: scriptText }] }],
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Kore' },
+          },
+        },
+      },
+    });
+
+    const base64Audio = audioResponse.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) {
+      throw new Error("No se generaron datos de audio.");
+    }
+    return base64Audio;
+  } catch (error) {
+    console.error("Error generating audio:", error);
     throw error;
   }
 };
@@ -138,7 +195,6 @@ export const fileToBase64 = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
     reader.onload = () => {
       const result = reader.result as string;
-      // Remove data URL prefix (e.g., "data:image/jpeg;base64,")
       const base64 = result.split(",")[1];
       resolve(base64);
     };
