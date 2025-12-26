@@ -62,17 +62,43 @@ export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisR
   const ai = new GoogleGenAI({ apiKey });
 
   // Prepare parts for the model
-  const parts = files.map((f) => ({
-    inlineData: {
-      mimeType: f.mimeType,
-      data: f.base64 || "",
-    },
-  }));
+  const parts: any[] = [];
+
+  for (const f of files) {
+    if (f.mimeType.startsWith('text/')) {
+      // For text files, we decode the base64 content and send it as a text part
+      try {
+        const binaryString = atob(f.base64 || "");
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const textContent = new TextDecoder().decode(bytes);
+        parts.push({ text: `--- INICIO DOCUMENTO DE TEXTO: ${f.file.name} ---\n${textContent}\n--- FIN DOCUMENTO ---\n` });
+      } catch (e) {
+        console.error(`Error decoding text file ${f.file.name}:`, e);
+        // Fallback to inlineData if decoding fails, though highly unlikely for text/plain
+        parts.push({
+          inlineData: {
+            mimeType: f.mimeType,
+            data: f.base64 || "",
+          },
+        });
+      }
+    } else {
+      // For PDF and Images, use inlineData
+      parts.push({
+        inlineData: {
+          mimeType: f.mimeType,
+          data: f.base64 || "",
+        },
+      });
+    }
+  }
 
   // Add the text prompt
   parts.push({
-    // @ts-ignore - The SDK types might expect only one type of part in some versions, but mixed is supported
-    text: `Analiza los siguientes documentos.
+    text: `Analiza los documentos adjuntos.
     1. Genera un resumen detallado y educativo del contenido.
     2. Identifica los temas principales y crea un cuestionario de evaluación (quiz) para cada tema.
     3. Asegúrate de que las preguntas sean desafiantes pero justas.
@@ -82,10 +108,10 @@ export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisR
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview", // Using the requested powerful model
+      model: "gemini-3-pro-preview", 
       contents: {
         role: "user",
-        parts: parts as any, // Cast to avoid strict type issues with mixed content if present
+        parts: parts,
       },
       config: {
         responseMimeType: "application/json",

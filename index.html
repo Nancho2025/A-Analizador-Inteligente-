@@ -5,7 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>A+ Estudia Mejor - Resumen y Quiz con IA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -26,8 +38,13 @@
           max-width: 100% !important;
         }
         /* Ensure text is black for printing */
-        .prose, p, h1, h2, h3, li {
+        .prose, p, h1, h2, h3, li, span, div {
           color: black !important;
+          background-color: white !important;
+        }
+        /* Reset specific dark mode borders for print */
+        * {
+          border-color: #e2e8f0 !important; /* slate-200 */
         }
       }
     </style>
@@ -44,7 +61,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 text-slate-900 antialiased">
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
     <div id="root"></div>
   </body>
 </html>

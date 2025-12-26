@@ -39,25 +39,25 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       <div 
-        className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors bg-white shadow-sm"
+        className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-800 shadow-sm"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
         <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="p-4 bg-blue-50 rounded-full text-blue-600">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
             <Upload size={32} />
           </div>
           <div>
-            <h3 className="text-lg font-medium text-slate-900">Sube tus documentos</h3>
-            <p className="text-slate-500 text-sm mt-1">Arrastra y suelta o selecciona archivos</p>
-            <p className="text-slate-400 text-xs mt-2">Soporta PDF, JPG, PNG (Max 10MB)</p>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Sube tus documentos</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Arrastra y suelta o selecciona archivos</p>
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">Soporta PDF, JPG, PNG, TXT (Max 10MB)</p>
           </div>
           
           <div className="relative">
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.jpg,.jpeg,.png,.txt"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               onChange={handleFileChange}
               disabled={isProcessing}
@@ -70,27 +70,27 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       </div>
 
       {files.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h4 className="font-medium text-slate-700 text-sm">Archivos seleccionados ({files.length})</h4>
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+            <h4 className="font-medium text-slate-700 dark:text-slate-300 text-sm">Archivos seleccionados ({files.length})</h4>
           </div>
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
             {files.map((file) => (
-              <li key={file.id} className="px-4 py-3 flex items-center justify-between group hover:bg-slate-50">
+              <li key={file.id} className="px-4 py-3 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-700/50">
                 <div className="flex items-center space-x-3 overflow-hidden">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                    {file.mimeType.includes('pdf') ? <FileText size={20} /> : <ImageIcon size={20} />}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                    {file.mimeType.includes('pdf') || file.mimeType.includes('text') ? <FileText size={20} /> : <ImageIcon size={20} />}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-900 truncate">{file.file.name}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{file.file.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {(file.file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={() => onRemoveFile(file.id)}
-                  className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                  className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                   disabled={isProcessing}
                 >
                   <X size={18} />
@@ -98,7 +98,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               </li>
             ))}
           </ul>
-          <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end">
             <Button 
               onClick={onAnalyze} 
               isLoading={isProcessing}
