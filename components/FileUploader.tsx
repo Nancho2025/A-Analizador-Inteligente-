@@ -32,6 +32,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       onFilesAdded(Array.from(e.target.files));
+      // Reset input value so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 
@@ -63,14 +65,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           <div>
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Sube tus documentos</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Arrastra y suelta o selecciona archivos</p>
-            <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">Soporta PDF, JPG, PNG, TXT (Max 10MB)</p>
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">Soporta PDF, JPG, PNG, TXT (Max 20MB)</p>
           </div>
           
           <div className="relative">
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png,.txt"
+              accept=".pdf,application/pdf,.jpg,.jpeg,.png,image/*,.txt,text/plain"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               onChange={handleFileChange}
               disabled={isBusy}
@@ -98,7 +100,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               </h4>
             </div>
           </div>
-          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+          {/* Added max-h and scroll for better UX with many files */}
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700 max-h-[300px] overflow-y-auto">
             {files.map((file) => {
                const isSelected = selectedFileIds.includes(file.id);
                return (

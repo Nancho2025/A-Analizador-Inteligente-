@@ -116,38 +116,59 @@ function App() {
   };
 
   const handleFilesAdded = async (newFiles: File[]) => {
-    const validFiles = newFiles.filter(file => {
-      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'text/plain'];
-      // Allow if valid type OR if unknown but extension is valid (e.g. windows txt/pdf)
-      const name = file.name.toLowerCase();
-      const hasValidExt = name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.jpg') || name.endsWith('.png');
+    // 1. Validation Phase
+    const allowedExtensions = ['.pdf', '.txt', '.jpg', '.jpeg', '.png'];
+    const allowedMimeTypes = ['application/pdf', 'text/plain', 'image/jpeg', 'image/png', 'image/jpg'];
+    // INCREASED LIMIT TO 20MB for image-heavy PDFs
+    const maxSize = 20 * 1024 * 1024; 
+
+    const validFiles: File[] = [];
+    const rejectedFiles: {name: string, reason: string}[] = [];
+
+    newFiles.forEach(file => {
+      const lowerName = file.name.toLowerCase();
+      const hasValidExt = allowedExtensions.some(ext => lowerName.endsWith(ext));
+      const hasValidMime = allowedMimeTypes.includes(file.type);
       
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      
-      // If browser doesn't detect type properly, rely on extension check + base types
-      const isValidType = validTypes.includes(file.type) || (!file.type && hasValidExt) || (file.type === '' && hasValidExt);
-      
-      return isValidType && file.size <= maxSize;
+      // Allow if either extension OR mime type is valid (maximum compatibility)
+      const isValidType = hasValidExt || hasValidMime;
+      const isValidSize = file.size <= maxSize;
+
+      if (isValidType && isValidSize) {
+        validFiles.push(file);
+      } else {
+        if (!isValidType) rejectedFiles.push({ name: file.name, reason: 'Formato no soportado' });
+        if (!isValidSize) rejectedFiles.push({ name: file.name, reason: 'Excede 20MB' });
+      }
     });
 
-    if (validFiles.length !== newFiles.length) {
-      alert("Algunos archivos fueron ignorados. Asegúrate de que sean PDF, JPG, PNG o TXT y pesen menos de 10MB.");
+    if (rejectedFiles.length > 0) {
+      const msg = rejectedFiles.map(f => `- ${f.name}: ${f.reason}`).join('\n');
+      alert(`Algunos archivos no se pudieron subir:\n${msg}`);
     }
 
-    const processedFiles = await Promise.all(validFiles.map(async (file) => {
-      const base64 = await fileToBase64(file);
-      return {
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        mimeType: file.type, // We will refine this in the service if empty
-        base64
-      };
-    }));
+    // 2. Processing Phase: Sequential processing
+    const successfullyProcessedFiles: UploadedFile[] = [];
 
-    const newFileIds = processedFiles.map(f => f.id);
-    setFiles(prev => [...prev, ...processedFiles]);
-    // Auto-select newly added files
-    setSelectedFileIds(prev => [...prev, ...newFileIds]);
+    for (const file of validFiles) {
+      try {
+        const base64 = await fileToBase64(file);
+        successfullyProcessedFiles.push({
+          id: Math.random().toString(36).substr(2, 9),
+          file,
+          mimeType: file.type || 'application/octet-stream', // Fallback if browser doesn't report it
+          base64
+        });
+      } catch (error) {
+        console.error(`Error processing file ${file.name}:`, error);
+      }
+    }
+
+    if (successfullyProcessedFiles.length > 0) {
+      setFiles(prev => [...prev, ...successfullyProcessedFiles]);
+      // Auto-select newly added files
+      setSelectedFileIds(prev => [...prev, ...successfullyProcessedFiles.map(f => f.id)]);
+    }
   };
 
   const handleRemoveFile = (id: string) => {
