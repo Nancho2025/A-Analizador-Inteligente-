@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, XCircle, HelpCircle, RefreshCw, Award } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, RefreshCw, Award, ArrowRight } from 'lucide-react';
 import { QuizTopic } from '../types';
 import Button from './Button';
 
@@ -53,18 +53,18 @@ const QuizView: React.FC<QuizViewProps> = ({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       
-      {/* Topic Navigation */}
-      <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar">
+      {/* Topic Navigation - Pills Style */}
+      <div className="flex overflow-x-auto pb-2 gap-3 no-scrollbar">
         {quizzes.map((q, idx) => (
           <button
             key={idx}
             onClick={() => setActiveTopicIndex(idx)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors ${
+            className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-sm font-bold transition-all ${
               activeTopicIndex === idx
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                ? 'bg-lime-400 text-zinc-950 shadow-[0_0_10px_rgba(163,230,53,0.3)]'
+                : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300'
             }`}
           >
             {q.topic}
@@ -73,15 +73,16 @@ const QuizView: React.FC<QuizViewProps> = ({
       </div>
 
       {/* Questions Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{currentTopic.topic}</h3>
-          <span className="text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-600">
-            {currentTopic.questions.length} Preguntas
+      <div className="bg-zinc-900 rounded-3xl shadow-lg border border-zinc-800 overflow-hidden relative">
+        {/* Card Header */}
+        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center">
+          <h3 className="text-xl font-bold text-white">{currentTopic.topic}</h3>
+          <span className="text-xs font-bold text-zinc-400 bg-zinc-800 px-3 py-1.5 rounded-lg border border-zinc-700">
+            {currentTopic.questions.length} PREGUNTAS
           </span>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-6 space-y-10">
           {currentTopic.questions.map((question, qIndex) => {
             const answerKey = `${activeTopicIndex}-${qIndex}`;
             const selectedOption = answers[answerKey];
@@ -89,31 +90,39 @@ const QuizView: React.FC<QuizViewProps> = ({
             
             return (
               <div key={qIndex} className="space-y-4">
-                <h4 className="text-base font-medium text-slate-900 dark:text-slate-100 flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center text-xs font-bold mt-0.5">
+                <h4 className="text-lg font-medium text-white flex gap-4 leading-relaxed">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-zinc-800 text-lime-400 border border-zinc-700 flex items-center justify-center text-sm font-bold">
                     {qIndex + 1}
                   </span>
                   {question.text}
                 </h4>
 
-                <div className="space-y-2 ml-9">
+                <div className="space-y-3 ml-0 sm:ml-12">
                   {question.options.map((option, oIndex) => {
-                    let optionClass = "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300";
-                    let icon = <div className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-500 mr-3" />;
+                    let optionClass = "border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:border-zinc-700";
+                    let icon = <div className="w-5 h-5 rounded-full border-2 border-zinc-700 mr-3 transition-colors group-hover:border-zinc-500" />;
                     
                     if (showResults) {
                       if (oIndex === question.correctAnswerIndex) {
-                        optionClass = "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300";
-                        icon = <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />;
+                        // Correct Answer State
+                        optionClass = "border-lime-500/50 bg-lime-500/10 text-lime-200";
+                        icon = <CheckCircle className="w-5 h-5 text-lime-400 mr-3" />;
                       } else if (selectedOption === oIndex) {
-                        optionClass = "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300";
-                        icon = <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3" />;
+                        // Wrong Selection State
+                        optionClass = "border-red-500/50 bg-red-500/10 text-red-200";
+                        icon = <XCircle className="w-5 h-5 text-red-500 mr-3" />;
                       } else {
-                        optionClass = "border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-60";
+                        // Neutral State in Results
+                        optionClass = "border-zinc-800/50 bg-zinc-950/50 text-zinc-600 opacity-50";
                       }
                     } else if (selectedOption === oIndex) {
-                      optionClass = "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-1 ring-blue-600 dark:ring-blue-500";
-                      icon = <div className="w-5 h-5 rounded-full border-[5px] border-blue-600 dark:border-blue-500 mr-3" />;
+                      // Selected State (Pre-results)
+                      optionClass = "border-lime-400 bg-zinc-800 text-white shadow-[0_0_10px_rgba(163,230,53,0.1)]";
+                      icon = (
+                        <div className="w-5 h-5 rounded-full border-2 border-lime-400 mr-3 flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-lime-400" />
+                        </div>
+                      );
                     }
 
                     return (
@@ -121,22 +130,22 @@ const QuizView: React.FC<QuizViewProps> = ({
                         key={oIndex}
                         onClick={() => handleAnswerSelect(qIndex, oIndex)}
                         disabled={showResults}
-                        className={`w-full text-left p-3 rounded-lg border flex items-center transition-all ${optionClass}`}
+                        className={`group w-full text-left p-4 rounded-xl border-2 flex items-center transition-all duration-200 ${optionClass}`}
                       >
                         {icon}
-                        <span className="text-sm">{option}</span>
+                        <span className="text-sm font-medium">{option}</span>
                       </button>
                     );
                   })}
                 </div>
 
                 {showResults && (
-                  <div className={`ml-9 text-sm p-3 rounded-lg ${isCorrect ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'}`}>
-                    <p className="font-semibold flex items-center gap-2">
-                      <HelpCircle size={16} />
+                  <div className={`ml-0 sm:ml-12 text-sm p-4 rounded-xl border ${isCorrect ? 'bg-lime-400/10 border-lime-400/20 text-lime-200' : 'bg-zinc-800 border-zinc-700 text-zinc-300'}`}>
+                    <p className="font-bold flex items-center gap-2 mb-1">
+                      <HelpCircle size={16} className={isCorrect ? 'text-lime-400' : 'text-zinc-400'} />
                       Explicación:
                     </p>
-                    <p className="mt-1 opacity-90">{question.explanation}</p>
+                    <p className="opacity-90 leading-relaxed">{question.explanation}</p>
                   </div>
                 )}
               </div>
@@ -146,33 +155,37 @@ const QuizView: React.FC<QuizViewProps> = ({
       </div>
 
       {/* Footer / Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-        {!showResults ? (
-          <>
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              Responde todas las preguntas de todos los temas antes de finalizar.
-            </div>
-            <Button onClick={onFinish} variant="primary" className="w-full sm:w-auto">
-              Finalizar y Ver Resultados
-            </Button>
-          </>
-        ) : (
-          <>
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full">
-                  <Award size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Puntuación Final</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{percentage}% <span className="text-base font-normal text-slate-400 dark:text-slate-500">({score.correct}/{score.total})</span></p>
-                </div>
-             </div>
-             <Button onClick={handleReset} variant="outline" className="w-full sm:w-auto">
-                <RefreshCw size={18} className="mr-2" />
-                Intentar de nuevo
-             </Button>
-          </>
-        )}
+      <div className="sticky bottom-4 z-20">
+        <div className="bg-zinc-900/90 backdrop-blur-lg p-4 rounded-2xl border border-zinc-800 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+          {!showResults ? (
+            <>
+              <div className="text-sm text-zinc-400 font-medium">
+                Responde todo antes de finalizar.
+              </div>
+              <Button onClick={onFinish} variant="primary" className="w-full sm:w-auto shadow-lg shadow-lime-400/20">
+                Finalizar Evaluación <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-4">
+                  <div className="p-3 bg-zinc-800 rounded-xl text-lime-400 border border-zinc-700">
+                    <Award size={24} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Tu Puntuación</p>
+                    <p className="text-2xl font-black text-white">
+                      {percentage}% <span className="text-base font-medium text-zinc-500">({score.correct}/{score.total})</span>
+                    </p>
+                  </div>
+              </div>
+              <Button onClick={handleReset} variant="secondary" className="w-full sm:w-auto">
+                  <RefreshCw size={18} className="mr-2" />
+                  Intentar de nuevo
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

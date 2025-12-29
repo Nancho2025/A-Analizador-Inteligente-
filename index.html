@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>A+ Estudia Mejor - Resumen y Quiz con IA</title>
+    <title>A+ Estudia Mejor</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
       tailwind.config = {
@@ -13,6 +13,17 @@
           extend: {
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              zinc: {
+                850: '#1f2025',
+                900: '#18181b',
+                950: '#09090b',
+              },
+              lime: {
+                400: '#a3e635',
+                500: '#84cc16',
+              }
             }
           }
         }
@@ -22,13 +33,31 @@
     <style>
       body {
         font-family: 'Inter', sans-serif;
+        background-color: #09090b; /* zinc-950 */
       }
+      /* Custom Scrollbar for dark theme */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #18181b; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #3f3f46; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #52525b; 
+      }
+
       @media print {
         .no-print {
           display: none !important;
         }
         body {
-          background-color: white;
+          background-color: white !important;
+          color: black !important;
         }
         #root {
           padding: 0;
@@ -37,17 +66,16 @@
           padding: 0 !important;
           max-width: 100% !important;
         }
-        /* Ensure text is black for printing */
         .prose, p, h1, h2, h3, li, span, div {
           color: black !important;
           background-color: white !important;
         }
-        /* Reset specific dark mode borders for print */
         * {
-          border-color: #e2e8f0 !important; /* slate-200 */
+          border-color: #e2e8f0 !important;
         }
       }
     </style>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -61,7 +89,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
+  <body class="bg-zinc-950 text-zinc-100 antialiased selection:bg-lime-400 selection:text-black">
     <div id="root"></div>
   </body>
 </html>
