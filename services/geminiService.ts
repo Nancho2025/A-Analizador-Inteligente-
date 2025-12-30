@@ -142,11 +142,16 @@ export const generateAudioFromDocuments = async (files: UploadedFile[]): Promise
   // Step 1: Generate a script from the documents using a vision/text model
   const scriptParts = getPartsFromFiles(files);
   scriptParts.push({
-    text: `Actúa como un locutor de podcast educativo. 
-    Escribe un guion fluido, natural y atractivo que explique los puntos más importantes de estos documentos.
-    El guion será leído en voz alta, así que evita usar viñetas, markdown (*, #) o formato complejo.
-    Usa un lenguaje claro y párrafos conectados. Comienza diciendo "Hola, aquí tienes el resumen de tus documentos...".
-    Mantén el guion conciso (máximo 300 palabras).`
+    text: `Tu objetivo es extraer el texto completo de los documentos proporcionados para ser leído en voz alta.
+    
+    INSTRUCCIONES ESTRICTAS:
+    1. NO RESUMAS el contenido.
+    2. NO INTERPRETES ni cambies el significado.
+    3. NO agregues introducciones (ej. "Aquí está el texto") ni despedidas.
+    4. Devuelve el contenido textual verbatim (palabra por palabra) tal como aparece en el documento.
+    5. Solo puedes omitir elementos que no se leen naturalmente, como números de página, encabezados repetitivos o pies de página técnicos.
+    
+    Devuelve SOLAMENTE el texto plano del documento.`
   });
 
   let scriptText = "";
@@ -163,6 +168,15 @@ export const generateAudioFromDocuments = async (files: UploadedFile[]): Promise
 
   // Step 2: Convert the script to Audio using the TTS model
   if (!scriptText) throw new Error("El guion de audio estaba vacío.");
+
+  // Safety Truncation: 
+  // Large verbatim texts can exceed the TTS model's input limit or timeout.
+  // We limit to ~20,000 characters to ensure stability while providing a significant amount of audio.
+  const MAX_TTS_CHARS = 20000;
+  if (scriptText.length > MAX_TTS_CHARS) {
+    console.warn(`Script too long (${scriptText.length} chars). Truncating to ${MAX_TTS_CHARS} for TTS.`);
+    scriptText = scriptText.substring(0, MAX_TTS_CHARS) + "... [Audio finalizado por límite de longitud]";
+  }
 
   try {
     const audioResponse = await ai.models.generateContent({

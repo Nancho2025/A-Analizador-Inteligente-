@@ -6,7 +6,7 @@ import QuizView from './components/QuizView';
 import Button from './components/Button';
 import { fileToBase64, analyzeDocuments, generateAudioFromDocuments } from './services/geminiService';
 import { generateQuizPDF } from './services/pdfService';
-import { Sparkles, Layout, BrainCircuit, FileDown, Printer, FileText, Moon, Sun, Headphones, Loader2, RotateCcw, Home, Download, ArrowLeft } from 'lucide-react';
+import { Sparkles, Layout, BrainCircuit, Printer, FileText, Moon, Sun, Headphones, Loader2, RotateCcw, Home, Download, ArrowLeft } from 'lucide-react';
 
 // Helper to convert Raw PCM (Gemini Default) to WAV Blob URL
 const createWavUrl = (base64: string): string => {
@@ -192,7 +192,8 @@ function App() {
     } catch (error) {
       console.error(error);
       alert("Hubo un error al analizar los documentos. Por favor intenta de nuevo.");
-      setStatus(AppStatus.ERROR);
+      // Reset to IDLE on error so UI doesn't crash trying to render null result
+      setStatus(AppStatus.IDLE);
     }
   };
 
@@ -217,9 +218,14 @@ function App() {
 
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al generar el audio. Por favor intenta de nuevo.");
-      if (result) setStatus(AppStatus.COMPLETED);
-      else setStatus(AppStatus.ERROR);
+      alert("Hubo un error al generar el audio. Puede que el documento sea demasiado largo.");
+      
+      // Safety reset: If we have results, go to COMPLETED view, otherwise go back to IDLE
+      if (result) {
+        setStatus(AppStatus.COMPLETED);
+      } else {
+        setStatus(AppStatus.IDLE);
+      }
     }
   };
 
@@ -300,22 +306,6 @@ function App() {
     setQuizShowResults(false);
   };
 
-  const handleDownloadTxt = () => {
-    if (!result) return;
-    let content = `A+ ESTUDIA MEJOR\n`;
-    content += `=================\n\n`;
-    content += result.summary + `\n\n`;
-    
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'a-mas-estudia-mejor.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleDownloadQuizPDF = () => {
     if (!result) return;
     generateQuizPDF(result, quizAnswers);
@@ -324,7 +314,8 @@ function App() {
   // CONDITIONAL RENDERING BASED ON STATUS
   
   // 1. Initial / Upload State
-  if (status === AppStatus.IDLE || status === AppStatus.PROCESSING || status === AppStatus.GENERATING_AUDIO) {
+  // Added AppStatus.ERROR here to prevent falling through to result view and crashing on null result
+  if (status === AppStatus.IDLE || status === AppStatus.PROCESSING || status === AppStatus.GENERATING_AUDIO || status === AppStatus.ERROR) {
     const hasAudioButNoAnalysis = audioUrl && !result;
 
     return (
@@ -464,11 +455,6 @@ function App() {
           {activeTab === 'summary' ? (
              <div className="relative">
                 <SummaryView summary={result!.summary} />
-                <div className="fixed bottom-8 right-8 z-30">
-                   <Button onClick={handleDownloadTxt} variant="primary" className="rounded-full shadow-xl shadow-lime-400/20 h-16 w-16 p-0 flex items-center justify-center border-4 border-zinc-950">
-                      <FileDown size={28} />
-                   </Button>
-                </div>
              </div>
           ) : (
             <>
