@@ -423,47 +423,8 @@ function App() {
            </div>
         )}
 
-        {/* Tab Navigation - Updated to Lime Aesthetic */}
-        <div className="flex justify-center mb-6 overflow-x-auto">
-           <div className="bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 inline-flex shadow-inner">
-              <button
-                onClick={() => setActiveTab('summary')}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
-                  activeTab === 'summary' 
-                    ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
-                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <Layout size={18} />
-                Resumen
-              </button>
-              <button
-                onClick={() => setActiveTab('flashcards')}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
-                  activeTab === 'flashcards' 
-                    ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
-                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <Layers size={18} />
-                Fichas
-              </button>
-              <button
-                onClick={() => setActiveTab('quiz')}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
-                  activeTab === 'quiz' 
-                    ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
-                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <BrainCircuit size={18} />
-                Evaluación
-              </button>
-           </div>
-        </div>
-
-        {/* Content */}
-        <div className="animate-in fade-in duration-500">
+        {/* Content Area - Now ABOVE the tabs */}
+        <div className="animate-in fade-in duration-500 min-h-[400px]">
           {activeTab === 'summary' && (
              <div className="relative">
                 <SummaryView summary={result!.summary} />
@@ -496,6 +457,49 @@ function App() {
             </>
           )}
         </div>
+
+        {/* Tab Navigation - Moved BELOW the content */}
+        <div className="flex flex-col items-center mt-12 mb-8">
+           <h3 className="text-zinc-500 text-sm font-medium uppercase tracking-widest mb-4">¿Qué quieres estudiar ahora?</h3>
+           <div className="flex justify-center overflow-x-auto w-full">
+              <div className="bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 inline-flex shadow-inner">
+                  <button
+                    onClick={() => setActiveTab('summary')}
+                    className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                      activeTab === 'summary' 
+                        ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
+                        : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    <Layout size={18} />
+                    Resumen
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('flashcards')}
+                    className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                      activeTab === 'flashcards' 
+                        ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
+                        : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    <Layers size={18} />
+                    Fichas
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('quiz')}
+                    className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                      activeTab === 'quiz' 
+                        ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
+                        : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    <BrainCircuit size={18} />
+                    Evaluación
+                  </button>
+              </div>
+           </div>
+        </div>
+
       </main>
     </div>
   );

@@ -55,23 +55,6 @@ const QuizView: React.FC<QuizViewProps> = ({
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       
-      {/* Topic Navigation - Pills Style */}
-      <div className="flex overflow-x-auto pb-2 gap-3 no-scrollbar">
-        {quizzes.map((q, idx) => (
-          <button
-            key={idx}
-            onClick={() => setActiveTopicIndex(idx)}
-            className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-sm font-bold transition-all ${
-              activeTopicIndex === idx
-                ? 'bg-lime-400 text-zinc-950 shadow-[0_0_10px_rgba(163,230,53,0.3)]'
-                : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300'
-            }`}
-          >
-            {q.topic}
-          </button>
-        ))}
-      </div>
-
       {/* Questions Card */}
       <div className="bg-zinc-900 rounded-3xl shadow-lg border border-zinc-800 overflow-hidden relative">
         {/* Card Header */}
@@ -152,6 +135,23 @@ const QuizView: React.FC<QuizViewProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* Topic Navigation - Pills Style (Moved Below Content) */}
+      <div className="flex overflow-x-auto pb-2 gap-3 no-scrollbar justify-center">
+        {quizzes.map((q, idx) => (
+          <button
+            key={idx}
+            onClick={() => setActiveTopicIndex(idx)}
+            className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-sm font-bold transition-all ${
+              activeTopicIndex === idx
+                ? 'bg-lime-400 text-zinc-950 shadow-[0_0_10px_rgba(163,230,53,0.3)]'
+                : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300'
+            }`}
+          >
+            {q.topic}
+          </button>
+        ))}
       </div>
 
       {/* Footer / Actions */}
