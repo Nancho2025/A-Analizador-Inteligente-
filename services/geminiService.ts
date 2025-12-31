@@ -9,6 +9,24 @@ const analysisSchema: Schema = {
       type: Type.STRING,
       description: "Un resumen completo y bien estructurado de los documentos proporcionados, en formato Markdown.",
     },
+    flashcards: {
+      type: Type.ARRAY,
+      description: "Una lista de 10 a 15 tarjetas de estudio (Flashcards) para memorización rápida. Deben centrarse en definiciones clave, fechas o conceptos puros, DIFERENTES a las preguntas de opción múltiple.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          front: {
+            type: Type.STRING,
+            description: "La cara frontal de la tarjeta: Un término, concepto o pregunta corta.",
+          },
+          back: {
+            type: Type.STRING,
+            description: "La cara posterior: La definición, explicación o respuesta concisa.",
+          },
+        },
+        required: ["front", "back"],
+      },
+    },
     quizzes: {
       type: Type.ARRAY,
       description: "Una lista de temas extraídos de los documentos, cada uno con su cuestionario.",
@@ -50,7 +68,7 @@ const analysisSchema: Schema = {
       },
     },
   },
-  required: ["summary", "quizzes"],
+  required: ["summary", "quizzes", "flashcards"],
 };
 
 const getPartsFromFiles = (files: UploadedFile[]) => {
@@ -107,9 +125,10 @@ export const analyzeDocuments = async (files: UploadedFile[]): Promise<AnalysisR
   const parts = getPartsFromFiles(files);
 
   parts.push({
-    text: `Analiza los documentos adjuntos.
+    text: `Analiza los documentos adjuntos con el objetivo de crear material de estudio completo.
     1. Genera un resumen detallado y educativo.
-    2. Identifica los temas principales y crea un cuestionario de evaluación.
+    2. Crea tarjetas de estudio (flashcards) para memorizar conceptos clave (distintas al quiz).
+    3. Identifica los temas principales y crea un cuestionario de evaluación (quiz).
     Responde estrictamente en formato JSON según el esquema.`,
   });
 

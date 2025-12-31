@@ -11,9 +11,15 @@ export interface QuizTopic {
   questions: Question[];
 }
 
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
 export interface AnalysisResult {
   summary: string;
   quizzes: QuizTopic[];
+  flashcards: Flashcard[];
 }
 
 export interface UploadedFile {
@@ -27,7 +33,7 @@ export interface UploadedFile {
 export enum AppStatus {
   IDLE = 'IDLE',
   PROCESSING = 'PROCESSING',
-  GENERATING_AUDIO = 'GENERATING_AUDIO', // New status
+  GENERATING_AUDIO = 'GENERATING_AUDIO',
   COMPLETED = 'COMPLETED',
   ERROR = 'ERROR'
 }

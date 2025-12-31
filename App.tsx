@@ -3,10 +3,11 @@ import { UploadedFile, AppStatus, AnalysisResult } from './types';
 import FileUploader from './components/FileUploader';
 import SummaryView from './components/SummaryView';
 import QuizView from './components/QuizView';
+import FlashcardsView from './components/FlashcardsView';
 import Button from './components/Button';
 import { fileToBase64, analyzeDocuments, generateAudioFromDocuments } from './services/geminiService';
 import { generateQuizPDF } from './services/pdfService';
-import { Sparkles, Layout, BrainCircuit, Printer, FileText, Moon, Sun, Headphones, Loader2, RotateCcw, Home, Download, ArrowLeft } from 'lucide-react';
+import { Sparkles, Layout, BrainCircuit, Printer, FileText, Moon, Sun, Headphones, Loader2, RotateCcw, Home, Download, ArrowLeft, Layers } from 'lucide-react';
 
 // Helper to convert Raw PCM (Gemini Default) to WAV Blob URL
 const createWavUrl = (base64: string): string => {
@@ -63,7 +64,7 @@ function App() {
   const [audioBase64, setAudioBase64] = useState<string | null>(null);
   const [audioFinished, setAudioFinished] = useState(false);
   const [isExportingMp3, setIsExportingMp3] = useState(false);
-  const [activeTab, setActiveTab] = useState<'summary' | 'quiz'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'flashcards' | 'quiz'>('summary');
   const audioRef = useRef<HTMLAudioElement>(null);
   
   // Force dark mode logic for this new design, though we keep the state for potential future toggle
@@ -423,11 +424,11 @@ function App() {
         )}
 
         {/* Tab Navigation - Updated to Lime Aesthetic */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 overflow-x-auto">
            <div className="bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 inline-flex shadow-inner">
               <button
                 onClick={() => setActiveTab('summary')}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
                   activeTab === 'summary' 
                     ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
                     : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
@@ -437,8 +438,19 @@ function App() {
                 Resumen
               </button>
               <button
+                onClick={() => setActiveTab('flashcards')}
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                  activeTab === 'flashcards' 
+                    ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
+                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                }`}
+              >
+                <Layers size={18} />
+                Fichas
+              </button>
+              <button
                 onClick={() => setActiveTab('quiz')}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
                   activeTab === 'quiz' 
                     ? 'bg-lime-400 text-zinc-950 shadow-md transform scale-105' 
                     : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
@@ -452,11 +464,19 @@ function App() {
 
         {/* Content */}
         <div className="animate-in fade-in duration-500">
-          {activeTab === 'summary' ? (
+          {activeTab === 'summary' && (
              <div className="relative">
                 <SummaryView summary={result!.summary} />
              </div>
-          ) : (
+          )}
+          
+          {activeTab === 'flashcards' && (
+             <div className="relative">
+                <FlashcardsView flashcards={result!.flashcards || []} />
+             </div>
+          )}
+
+          {activeTab === 'quiz' && (
             <>
              <div className="flex justify-end mb-4">
                 {quizShowResults && (
